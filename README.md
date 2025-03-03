@@ -8,6 +8,8 @@
  - Double jump feature
  - Coin collecting feature (utilizing this coin asset - https://poly.pizza/m/QHZtj94fvh)
  - Score counter with UI
+ - Invisible walls, and obstacles
+ - Ability to tune the movement within the inspector
 
 https://github.com/user-attachments/assets/53c742d7-ccbe-4bf2-b165-97196de8857d
 
