@@ -1,39 +1,46 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 5f;
     [SerializeField] private float rotationSpeed = 10f;
-    [SerializeField] private Rigidbody rigidbody;
+    [SerializeField] private Rigidbody rb;
     [SerializeField] private Camera mainCamera;
+    private bool isTimerRunning = false;
     private bool isInContact = false;
+    private int numJumps = 0;
     
     void Start()
     {
         if (mainCamera == null)
             mainCamera = Camera.main;
             
-        rigidbody.freezeRotation = true;
+        rb.freezeRotation = true;
     }
     
     void OnCollisionEnter(Collision collision){
-        isInContact = true;
+        numJumps = 0;
     }
     
     void OnCollisionStay(Collision collision){
-        isInContact = true;
+        numJumps = 0;
     }
     
     void OnCollisionExit(Collision collision){
-        isInContact = false;
     }
     
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && isInContact)
+        if (Input.GetKeyDown(KeyCode.Space) && numJumps < 2) 
         {
-            rigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            numJumps++;
+        }
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            StartDash();
         }
     }
     
@@ -55,8 +62,8 @@ public class PlayerController : MonoBehaviour
             Vector3 moveDirection = (cameraForward * vertical + cameraRight * horizontal).normalized;
             
             Vector3 newVelocity = moveDirection * moveSpeed;
-            newVelocity.y = rigidbody.linearVelocity.y; 
-            rigidbody.linearVelocity = newVelocity;
+            newVelocity.y = rb.linearVelocity.y; 
+            rb.linearVelocity = newVelocity;
             
             if (moveDirection != Vector3.zero)
             {
@@ -66,8 +73,37 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            Vector3 currentVelocity = rigidbody.linearVelocity;
-            rigidbody.linearVelocity = new Vector3(0, currentVelocity.y, 0);
+            Vector3 currentVelocity = rb.linearVelocity;
+            rb.linearVelocity = new Vector3(0, currentVelocity.y, 0);
         }
+    }
+    public void StartDash()
+    {
+        if (!isTimerRunning)
+        {
+            moveSpeed *= 2;
+            StartCoroutine(TimerCoroutine());
+        }
+    }
+
+     private IEnumerator TimerCoroutine()
+    {
+        isTimerRunning = true; 
+        float elapsedTime = 0f;
+        float duration = 5f;
+        
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        isTimerRunning = false;
+        
+        TimerCompleted();
+    }
+    
+    private void TimerCompleted()
+    {
+        moveSpeed /= 2;
     }
 }
